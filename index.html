@@ -96,6 +96,7 @@
             transition: opacity 0.5s ease;
         }
 
+        /* Preview Mode Styles */
         .preview-mode .sidebar, 
         .preview-mode nav,
         .preview-mode .element-controls {
@@ -122,7 +123,9 @@
         #preview-exit-btn {
             display: none;
         }
-        .preview-mode #preview-exit-btn {
+
+        /* Only show exit button if NOT in public-only view */
+        .preview-mode:not(.public-view) #preview-exit-btn {
             display: block;
             position: fixed;
             bottom: 20px;
@@ -131,11 +134,11 @@
         }
     </style>
 </head>
-<body class="preview-mode"> <!-- Start in preview mode if data exists -->
+<body class="preview-mode"> 
 
     <div id="loading-overlay">
         <div class="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-green-700 font-bold">Unfolding your garden...</p>
+        <p class="text-green-700 font-bold text-center px-4">Unfolding the garden...<br><span class="text-xs font-normal text-slate-400">Large gardens may take a moment.</span></p>
     </div>
 
     <nav class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-50 relative">
@@ -153,7 +156,7 @@
                 <i class="fas fa-eye text-sm"></i>
             </button>
             <button onclick="generateShareLink()" id="publish-btn" class="bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-5 rounded-full transition shadow-md flex items-center gap-2">
-                <i class="fas fa-share-alt"></i> Get Shareable Link
+                <i class="fas fa-share-alt"></i> Share Public Link
             </button>
         </div>
     </nav>
@@ -163,12 +166,12 @@
             <div id="active-page" class="site-page">
                 <div id="page-header" class="h-64 bg-slate-800 flex items-center justify-center relative group overflow-hidden bg-cover bg-center">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                    <h1 id="main-title" contenteditable="true" class="text-6xl font-extrabold text-white z-10 relative px-4 text-center">PAGE TITLE</h1>
+                    <h1 id="main-title" contenteditable="true" class="text-5xl md:text-6xl font-extrabold text-white z-10 relative px-4 text-center">PAGE TITLE</h1>
                     <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition">
                         <button onclick="triggerImageUpload('header')" class="bg-white/20 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded border border-white/30 hover:bg-white/30">Change Cover</button>
                     </div>
                 </div>
-                <div id="page-content" class="p-12 space-y-8 min-h-[400px]">
+                <div id="page-content" class="p-8 md:p-12 space-y-8 min-h-[400px]">
                 </div>
             </div>
         </div>
@@ -213,7 +216,7 @@
                     <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#fbbf24"/><circle cx="35" cy="40" r="5" fill="black"/><circle cx="65" cy="40" r="5" fill="black"/><path d="M30 65 Q50 80 70 65" stroke="black" fill="none" stroke-width="3"/></svg>
                 </div>
                 <p id="advisor-text" class="text-[11px] text-green-800 italic leading-tight">
-                    "I'm Planty! No databases here—your whole site is stored right in the link!"
+                    "I've increased the image limit to 2MB! Public links are now read-only for your visitors."
                 </p>
             </div>
         </aside>
@@ -222,17 +225,18 @@
     <div id="shareModal" class="fixed inset-0 bg-slate-900/60 hidden z-[200] flex items-center justify-center p-6">
         <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center">
             <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
-                <i class="fas fa-link"></i>
+                <i class="fas fa-globe-americas"></i>
             </div>
-            <h3 class="text-2xl font-bold mb-2">Link Generated!</h3>
-            <p class="text-slate-500 mb-6 text-sm">Anyone with this link can view your garden. <strong>Note:</strong> Since we don't use a database, you must save this link if you want to edit it later!</p>
+            <h3 class="text-2xl font-bold mb-2">Public Link Ready</h3>
+            <p class="text-slate-500 mb-6 text-sm">Visitors using this link <strong>cannot</strong> edit your garden. 
+            <br><br><span class="text-red-500 font-semibold">Important:</span> Bookmark this current editor page if you want to make changes later!</p>
             
             <div class="flex items-center gap-2 bg-slate-100 p-3 rounded-xl mb-6">
                 <input type="text" id="share-url" readonly class="bg-transparent border-none text-xs w-full focus:ring-0 text-slate-600 font-mono">
                 <button onclick="copyShareUrl()" class="bg-green-600 text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition">Copy</button>
             </div>
             
-            <button onclick="closeShareModal()" class="text-slate-400 font-bold hover:text-slate-600 transition">Got it</button>
+            <button onclick="closeShareModal()" class="text-slate-400 font-bold hover:text-slate-600 transition underline">Close</button>
         </div>
     </div>
 
@@ -259,8 +263,8 @@
     <script>
         let pagesData = { 'home': { name: 'Home', content: '', headerImg: '' } };
         let currentPageId = 'home';
+        const IMAGE_SIZE_LIMIT = 2097152; // 2MB in bytes
 
-        // Utility to compress data for URL
         function compressData(obj) {
             const str = JSON.stringify(obj);
             return btoa(unescape(encodeURIComponent(str)));
@@ -291,7 +295,9 @@
         };
 
         window.loadPage = (id) => {
-            saveCurrentPage();
+            if (!document.body.classList.contains('public-view')) {
+                saveCurrentPage();
+            }
             const page = pagesData[id];
             if(!page) return;
             document.getElementById('page-content').innerHTML = page.content;
@@ -302,14 +308,20 @@
                 document.getElementById('page-header').style.backgroundImage = 'none';
             }
             currentPageId = id;
+            
+            // Re-disable editing if in public view
+            if (document.body.classList.contains('public-view')) {
+                document.querySelectorAll('[contenteditable]').forEach(el => el.contentEditable = false);
+            }
+            
             renderPagesList();
         };
 
         window.saveCurrentPage = () => {
-            if (!pagesData[currentPageId]) return;
+            if (!pagesData[currentPageId] || document.body.classList.contains('public-view')) return;
             pagesData[currentPageId].content = document.getElementById('page-content').innerHTML;
             const bg = document.getElementById('page-header').style.backgroundImage;
-            pagesData[currentPageId].headerImg = bg ? bg.slice(5, -2).replace(/"/g, "") : "";
+            pagesData[currentPageId].headerImg = bg && bg !== 'none' ? bg.slice(5, -2).replace(/"/g, "") : "";
             pagesData[currentPageId].name = document.getElementById('main-title').innerText;
         };
 
@@ -364,8 +376,8 @@
         window.handleImageUpload = (e) => {
             const file = e.target.files[0];
             if(!file) return;
-            if(file.size > 200000) {
-                alert("Image too large for URL sharing! Try an image under 200kb.");
+            if(file.size > IMAGE_SIZE_LIMIT) {
+                alert("Image too large! Please use an image under 2MB to ensure the sharing link works correctly.");
                 return;
             }
             const reader = new FileReader();
@@ -384,13 +396,14 @@
 
         window.renderPagesList = () => {
             const list = document.getElementById('pages-list');
+            if (!list) return;
             list.innerHTML = "";
             Object.keys(pagesData).forEach(id => {
                 const isActive = id === currentPageId;
                 list.innerHTML += `
                     <div class="p-3 rounded-xl border flex items-center justify-between group cursor-pointer ${isActive ? 'bg-green-100 border-green-200 text-green-800' : 'hover:bg-slate-50 border-transparent text-slate-500'}" onclick="loadPage('${id}')">
                         <span class="text-sm font-bold flex items-center gap-2"><i class="fas fa-leaf text-[10px]"></i> ${pagesData[id].name}</span>
-                        ${id !== 'home' ? `<button onclick="event.stopPropagation(); deletePage('${id}')" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button>` : ''}
+                        ${id !== 'home' && !document.body.classList.contains('public-view') ? `<button onclick="event.stopPropagation(); deletePage('${id}')" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button>` : ''}
                     </div>
                 `;
             });
@@ -435,8 +448,12 @@
                 if (decompressed) {
                     pagesData = decompressed.pages;
                     document.getElementById('site-title-input').value = decompressed.title;
+                    
+                    // PUBLIC VIEW LOCKDOWN
+                    document.body.classList.add('public-view');
+                    document.body.classList.add('preview-mode');
+                    
                     loadPage('home');
-                    togglePreview(true); // Auto-preview for shared links
                 }
             } else {
                 togglePreview(false); // Start in editor if no data
