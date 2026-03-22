@@ -3,180 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bloom | Website Builder</title>
+    <title>Bloom | Portable Web Builder</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        
-        :root {
-            --bloom-green: #10b981;
-            --bloom-dark: #064e3b;
-            --bloom-soft: #ecfdf5;
-        }
-
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f0f4f8;
-            color: #1e293b;
-            margin: 0;
-            overflow: hidden;
-        }
-
-        #dashboard-view, #editor-view {
-            height: 100vh;
-            width: 100vw;
-            display: none;
-        }
-        .view-active { display: block !important; }
-
-        .sidebar {
-            background: white;
-            border-left: 1px solid #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            box-shadow: -4px 0 15px rgba(0,0,0,0.02);
-            height: 100%;
-        }
-
-        .editor-container {
-            display: grid;
-            grid-template-columns: 1fr 340px;
-            height: calc(100vh - 64px);
-        }
-
-        .canvas-viewport {
-            overflow-y: auto;
-            background-color: #cbd5e1;
-            padding: 40px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            scroll-behavior: smooth;
-        }
-
-        .site-page {
-            width: 100%;
-            max-width: 900px;
-            min-height: 100vh;
-            background: white;
-            box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.15);
-            border-radius: 12px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 100px;
-        }
-
-        .site-nav {
-            height: 70px;
-            padding: 0 40px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: white;
-            border-bottom: 1px solid #f1f5f9;
-            z-index: 40;
-            position: sticky;
-            top: 0;
-        }
-
-        .site-nav-links {
-            display: flex;
-            gap: 24px;
-        }
-
-        .nav-link-item {
-            font-size: 14px;
-            font-weight: 600;
-            color: #64748b;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .element-wrapper {
-            position: relative;
-            border: 2px solid transparent;
-            transition: all 0.2s;
-            border-radius: 8px;
-        }
-        
-        body:not(.preview-mode) .element-wrapper:hover {
-            border-color: var(--bloom-green);
-        }
-        
-        .element-controls {
-            position: absolute;
-            left: -50px;
-            top: 0;
-            display: none;
-            flex-direction: column;
-            gap: 6px;
-            z-index: 50;
-        }
-        
-        body:not(.preview-mode) .element-wrapper:hover .element-controls {
-            display: flex;
-        }
-
-        .preview-mode .sidebar, 
-        .preview-mode .editor-nav,
-        .preview-mode .element-controls {
-            display: none !important;
-        }
+        :root { --bloom-green: #10b981; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; overflow-x: hidden; }
+        .view-hidden { display: none !important; }
+        .editor-container { display: grid; grid-template-columns: 1fr 340px; height: calc(100vh - 64px); }
+        .canvas-viewport { overflow-y: auto; background-color: #e2e8f0; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; }
+        .site-page { width: 100%; max-width: 1000px; min-height: 100vh; background: white; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); border-radius: 16px; position: relative; display: flex; flex-direction: column; margin-bottom: 100px; }
+        .site-nav { height: 80px; padding: 0 40px; display: flex; align-items: center; justify-content: space-between; background: white; border-bottom: 1px solid #f1f5f9; z-index: 40; position: sticky; top: 0; border-radius: 16px 16px 0 0; }
+        .element-wrapper { position: relative; border: 2px solid transparent; transition: border 0.2s; }
+        body:not(.preview-mode) .element-wrapper:hover { border-color: var(--bloom-green); }
+        .element-controls { position: absolute; right: 10px; top: 10px; display: none; gap: 4px; z-index: 50; background: white; padding: 4px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        body:not(.preview-mode) .element-wrapper:hover .element-controls { display: flex; }
+        .preview-mode .sidebar, .preview-mode .editor-nav, .preview-mode .element-controls { display: none !important; }
         .preview-mode .editor-container { grid-template-columns: 1fr; height: 100vh; }
         .preview-mode .canvas-viewport { padding: 0; background: white; }
         .preview-mode .site-page { box-shadow: none; max-width: 100%; border-radius: 0; margin-bottom: 0; }
-
-        #preview-exit-btn {
-            display: none;
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 1000;
-        }
-        .preview-mode:not(.public-view) #preview-exit-btn { display: flex; }
-
-        .sidebar-scroll {
-            overflow-y: auto;
-            flex: 1;
-        }
+        [contenteditable]:focus { outline: none; background: rgba(16, 185, 129, 0.05); border-radius: 4px; }
     </style>
 </head>
-<body class="preview-mode"> 
+<body class="preview-mode">
 
     <!-- Dashboard -->
-    <div id="dashboard-view">
-        <nav class="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-10 sticky top-0 z-50">
+    <div id="dashboard-view" class="min-h-screen">
+        <nav class="h-20 bg-white border-b flex items-center justify-between px-10 sticky top-0 z-50">
             <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
-                    <i class="fas fa-seedling text-2xl"></i>
-                </div>
-                <span class="text-2xl font-black text-slate-800">BLOOM</span>
+                <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white"><i class="fas fa-bolt text-xl"></i></div>
+                <span class="text-xl font-black tracking-tight">BLOOM PORTABLE</span>
             </div>
-            <button onclick="createNewGarden()" class="bg-emerald-600 text-white font-bold py-3 px-8 rounded-2xl shadow-xl">Plant New Site</button>
+            <button onclick="startNewProject()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-2xl shadow-lg transition-all active:scale-95">
+                <i class="fas fa-plus mr-2"></i> Start Building
+            </button>
         </nav>
-        <main class="max-w-7xl mx-auto p-12">
-            <div id="gardens-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"></div>
-            <div id="empty-state" class="hidden text-center py-32">
-                <h2 class="text-3xl font-bold text-slate-800">No sites yet!</h2>
+        <main class="max-w-4xl mx-auto p-12 text-center">
+            <div class="py-20">
+                <h1 class="text-6xl font-black mb-6 tracking-tighter">No Servers. <span class="text-emerald-500">Just Links.</span></h1>
+                <p class="text-slate-500 text-xl font-medium mb-10">Build a website, click publish, and get a link that contains your entire site. No database or hosting required.</p>
+                <div id="local-projects" class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                    <!-- Local projects from localStorage -->
+                </div>
             </div>
         </main>
     </div>
 
     <!-- Editor -->
-    <div id="editor-view">
-        <nav class="editor-nav h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-50 relative">
+    <div id="editor-view" class="view-hidden">
+        <nav class="editor-nav h-16 bg-white border-b flex items-center justify-between px-6 z-50">
             <div class="flex items-center gap-4">
-                <button onclick="exitToDashboard()" class="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:bg-emerald-50"><i class="fas fa-th-large"></i></button>
-                <input type="text" id="site-title-input" oninput="autoSave()" class="text-sm font-extrabold text-slate-800 border-none bg-transparent w-48">
+                <button onclick="exitToDashboard()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100"><i class="fas fa-arrow-left text-slate-400"></i></button>
+                <input type="text" id="site-title-input" class="text-sm font-bold text-slate-800 border-none bg-transparent w-48 focus:ring-0" value="My Portable Site">
             </div>
             <div class="flex items-center gap-4">
                 <div class="flex bg-slate-100 p-1 rounded-xl">
-                    <button onclick="togglePreview(false)" id="btn-edit-mode" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-emerald-600">Editor</button>
-                    <button onclick="togglePreview(true)" id="btn-preview-mode" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500">Preview</button>
+                    <button onclick="togglePreview(false)" id="btn-edit" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-white text-emerald-600 shadow-sm">Build</button>
+                    <button onclick="togglePreview(true)" id="btn-prev" class="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-500">Preview</button>
                 </div>
-                <button onclick="generateShareLink()" class="bg-emerald-600 text-white text-xs font-bold py-2.5 px-6 rounded-full">Publish</button>
+                <button onclick="publishToLink()" class="bg-slate-900 text-white text-xs font-bold py-2.5 px-6 rounded-full hover:bg-black">Publish to Link</button>
             </div>
         </nav>
 
@@ -184,403 +70,172 @@
             <div class="canvas-viewport" id="viewport">
                 <div id="active-page" class="site-page">
                     <header class="site-nav">
-                        <span id="nav-brand-name" class="font-bold">GARDEN</span>
-                        <nav id="site-header-nav" class="site-nav-links"></nav>
+                        <span id="nav-brand" class="font-black text-emerald-600 tracking-tighter text-xl">BLOOM</span>
                     </header>
-                    <div id="page-content" class="min-h-screen"></div>
-                    <footer class="p-12 bg-slate-50 border-t text-center text-slate-400 text-xs font-bold uppercase">Built with Bloom</footer>
+                    <div id="page-content" class="flex-1"></div>
+                    <footer class="p-10 bg-slate-50 border-t text-center">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Built with Bloom Portable</p>
+                    </footer>
                 </div>
             </div>
 
-            <aside class="sidebar">
-                <div class="flex border-b border-slate-200 shrink-0">
-                    <button onclick="switchTab('insert')" id="tab-insert" class="flex-1 py-5 text-xs font-black border-b-2 border-emerald-500 text-emerald-600">Insert</button>
-                    <button onclick="switchTab('pages')" id="tab-pages" class="flex-1 py-5 text-xs font-black text-slate-400">Pages</button>
+            <aside class="sidebar bg-white w-[340px] border-l p-6">
+                <h4 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Add Content</h4>
+                <div class="grid grid-cols-2 gap-3 mb-8">
+                    <button onclick="addBlock('hero')" class="p-4 bg-slate-50 rounded-2xl hover:bg-emerald-50 text-center transition-all">
+                        <i class="fas fa-image text-emerald-500 mb-2"></i>
+                        <div class="text-[10px] font-bold">Hero</div>
+                    </button>
+                    <button onclick="addBlock('text')" class="p-4 bg-slate-50 rounded-2xl hover:bg-emerald-50 text-center transition-all">
+                        <i class="fas fa-align-left text-emerald-500 mb-2"></i>
+                        <div class="text-[10px] font-bold">Text</div>
+                    </button>
                 </div>
-
-                <div class="sidebar-scroll">
-                    <div id="panel-insert" class="p-6 space-y-8">
-                        <section>
-                            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Core Blocks</h3>
-                            <div class="grid grid-cols-2 gap-3">
-                                <button onclick="addBlock('banner')" class="flex flex-col items-center gap-3 p-5 bg-white rounded-2xl border border-slate-100 hover:bg-emerald-50">
-                                    <i class="fas fa-pager text-slate-400"></i>
-                                    <span class="text-[11px] font-bold">Banner</span>
-                                </button>
-                                <button onclick="addBlock('title')" class="flex flex-col items-center gap-3 p-5 bg-white rounded-2xl border border-slate-100 hover:bg-emerald-50">
-                                    <i class="fas fa-heading text-slate-400"></i>
-                                    <span class="text-[11px] font-bold">Heading</span>
-                                </button>
-                                <button onclick="addBlock('text')" class="flex flex-col items-center gap-3 p-5 bg-white rounded-2xl border border-slate-100 hover:bg-emerald-50">
-                                    <i class="fas fa-paragraph text-slate-400"></i>
-                                    <span class="text-[11px] font-bold">Text</span>
-                                </button>
-                                <button onclick="addBlock('button')" class="flex flex-col items-center gap-3 p-5 bg-white rounded-2xl border border-slate-100 hover:bg-emerald-50">
-                                    <i class="fas fa-mouse-pointer text-slate-400"></i>
-                                    <span class="text-[11px] font-bold">Button</span>
-                                </button>
-                                <button onclick="triggerImageUpload('block')" class="flex flex-col items-center gap-3 p-5 bg-white rounded-2xl border border-slate-100 hover:bg-emerald-50">
-                                    <i class="fas fa-image text-slate-400"></i>
-                                    <span class="text-[11px] font-bold">Image</span>
-                                </button>
-                                <button onclick="openEmbedModal()" class="flex flex-col items-center gap-3 p-5 bg-white rounded-2xl border border-slate-100 hover:bg-emerald-50">
-                                    <i class="fas fa-code text-slate-400"></i>
-                                    <span class="text-[11px] font-bold">Embed</span>
-                                </button>
-                            </div>
-                        </section>
-                        <section>
-                            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Site Settings</h3>
-                            <div class="space-y-3">
-                                <div class="p-4 bg-slate-50 rounded-2xl">
-                                    <label class="text-[10px] font-bold text-slate-400 block mb-2">Accent Color</label>
-                                    <input type="color" id="accent-color" onchange="updateColors()" value="#10b981" class="w-full h-8 rounded-lg cursor-pointer">
-                                </div>
-                            </div>
-                        </section>
-                    </div>
-                    <div id="panel-pages" class="p-6 hidden">
-                        <div id="pages-list" class="space-y-2 mb-8"></div>
-                        <button onclick="createNewPage()" class="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold flex items-center justify-center gap-2">
-                            <i class="fas fa-plus"></i> New Page
-                        </button>
-                    </div>
+                <h4 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Design</h4>
+                <div class="p-4 bg-slate-50 rounded-2xl">
+                    <label class="text-[10px] font-bold text-slate-500 block mb-2">Accent Color</label>
+                    <input type="color" id="accent-color" onchange="updateStyles()" value="#10b981" class="w-full h-10 rounded-lg cursor-pointer">
                 </div>
             </aside>
         </div>
     </div>
 
-    <!-- Modals -->
-    <div id="buttonModal" class="fixed inset-0 bg-slate-900/80 hidden z-[300] flex items-center justify-center p-6 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl p-10 max-w-md w-full shadow-2xl">
-            <h3 class="text-2xl font-black mb-6">Button Settings</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Link URL</label>
-                    <input type="text" id="button-url-input" placeholder="https://..." class="w-full p-4 rounded-xl bg-slate-50 border-none outline-none focus:ring-2 focus:ring-emerald-500">
-                </div>
-                <div class="flex gap-3 pt-4">
-                    <button onclick="closeButtonModal()" class="flex-1 py-4 text-slate-400 font-black text-xs uppercase">Cancel</button>
-                    <button onclick="saveButtonLink()" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs uppercase">Save Link</button>
-                </div>
+    <!-- Publish Modal -->
+    <div id="shareModal" class="fixed inset-0 bg-slate-900/80 hidden z-[500] flex items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white rounded-[40px] p-12 max-w-lg w-full text-center shadow-2xl">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl"><i class="fas fa-link"></i></div>
+            <h3 class="text-2xl font-black mb-2">Website Link Created!</h3>
+            <p class="text-slate-500 mb-6 text-sm">This link contains your entire website. Copy and share it anywhere.</p>
+            <textarea id="share-url" readonly class="w-full h-32 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-[10px] font-mono mb-6 focus:ring-0 resize-none"></textarea>
+            <div class="flex gap-3">
+                <button onclick="copyLink()" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs uppercase">Copy Link</button>
+                <button onclick="closeModal()" class="flex-1 bg-slate-100 text-slate-400 py-4 rounded-2xl font-black text-xs uppercase">Close</button>
             </div>
         </div>
     </div>
-
-    <div id="shareModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-6 backdrop-blur-sm">
-        <div class="bg-white rounded-[40px] p-10 max-w-md w-full text-center shadow-2xl">
-            <h3 class="text-3xl font-black mb-3">Live!</h3>
-            <div class="flex items-center gap-2 bg-slate-50 p-4 rounded-2xl mb-8 border border-slate-100">
-                <input type="text" id="share-url" readonly class="bg-transparent border-none text-xs w-full focus:ring-0">
-                <button onclick="copyShareUrl()" class="bg-emerald-600 text-white text-xs px-6 py-2.5 rounded-xl font-black">COPY</button>
-            </div>
-            <button onclick="document.getElementById('shareModal').classList.add('hidden')" class="text-slate-400 text-xs font-black uppercase">Close</button>
-        </div>
-    </div>
-
-    <div id="embedModal" class="fixed inset-0 bg-slate-900/80 hidden z-[100] flex items-center justify-center p-6 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl p-10 max-w-xl w-full shadow-2xl">
-            <h3 class="text-2xl font-black mb-6">Embed Code</h3>
-            <textarea id="embedCodeInput" placeholder="Paste <iframe> code..." class="w-full h-48 p-4 rounded-xl bg-slate-50 border-none outline-none focus:ring-2 focus:ring-emerald-500 font-mono text-sm resize-none"></textarea>
-            <div class="flex gap-3 pt-4">
-                <button onclick="document.getElementById('embedModal').classList.add('hidden')" class="flex-1 py-4 text-slate-400 font-black text-xs uppercase">Cancel</button>
-                <button onclick="confirmAddEmbed()" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs uppercase">Insert</button>
-            </div>
-        </div>
-    </div>
-
-    <button id="preview-exit-btn" onclick="togglePreview(false)" class="bg-slate-900 text-white px-8 py-4 rounded-full shadow-2xl flex items-center gap-3 font-bold text-sm">
-        <i class="fas fa-magic text-emerald-400"></i> Back to Builder
-    </button>
-
-    <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
 
     <script>
-        let gardens = JSON.parse(localStorage.getItem('bloom_gardens') || '{}');
-        let currentGardenId = localStorage.getItem('bloom_last_garden') || null;
-        let currentPageId = 'home';
-        let currentButtonElement = null;
+        let currentSite = { title: "My Portable Site", accent: "#10b981", content: "" };
+
+        // 1. Core Link Logic: Data to URL
+        function publishToLink() {
+            currentSite.title = document.getElementById('site-title-input').value;
+            currentSite.accent = document.getElementById('accent-color').value;
+            currentSite.content = document.getElementById('page-content').innerHTML;
+
+            const dataString = JSON.stringify(currentSite);
+            const encodedData = btoa(unescape(encodeURIComponent(dataString)));
+            const finalUrl = window.location.origin + window.location.pathname + "?s=" + encodedData;
+
+            document.getElementById('share-url').value = finalUrl;
+            document.getElementById('shareModal').classList.remove('hidden');
+            
+            // Also save locally for the dashboard
+            localStorage.setItem('bloom_last_site', dataString);
+        }
+
+        // 2. Load Logic: URL to Data
+        window.onload = () => {
+            const params = new URLSearchParams(window.location.search);
+            const siteData = params.get('s');
+
+            if (siteData) {
+                try {
+                    const decodedData = decodeURIComponent(escape(atob(siteData)));
+                    currentSite = JSON.parse(decodedData);
+                    renderSite();
+                    togglePreview(true);
+                    document.body.classList.add('is-public');
+                } catch (e) {
+                    console.error("Invalid site link");
+                    showView('dashboard');
+                }
+            } else {
+                showView('dashboard');
+                loadLocalProjects();
+            }
+        };
+
+        function renderSite() {
+            document.getElementById('nav-brand').innerText = currentSite.title.toUpperCase();
+            document.getElementById('nav-brand').style.color = currentSite.accent;
+            document.getElementById('page-content').innerHTML = currentSite.content;
+            document.getElementById('site-title-input').value = currentSite.title;
+            document.getElementById('accent-color').value = currentSite.accent;
+            showView('editor');
+        }
 
         function showView(view) {
-            document.getElementById('dashboard-view').classList.toggle('view-active', view === 'dashboard');
-            document.getElementById('editor-view').classList.toggle('view-active', view === 'editor');
+            document.getElementById('dashboard-view').classList.toggle('view-hidden', view !== 'dashboard');
+            document.getElementById('editor-view').classList.toggle('view-hidden', view !== 'editor');
+            if(view === 'dashboard') document.body.classList.remove('preview-mode');
         }
 
-        function exitToDashboard() {
-            saveCurrentPage();
-            showView('dashboard');
-            renderDashboard();
-        }
-
-        function renderDashboard() {
-            const grid = document.getElementById('gardens-grid');
-            const empty = document.getElementById('empty-state');
-            grid.innerHTML = '';
-            const keys = Object.keys(gardens);
-            if (keys.length === 0) { empty.classList.remove('hidden'); return; }
-            empty.classList.add('hidden');
-            keys.forEach(id => {
-                const g = gardens[id];
-                const card = document.createElement('div');
-                card.className = 'bg-white rounded-[32px] p-8 shadow-lg cursor-pointer hover:scale-105 transition-transform';
-                card.onclick = () => openGarden(id);
-                card.innerHTML = `<h3 class="font-black text-2xl mb-1">${g.title}</h3><p class="text-slate-400 text-xs">${Object.keys(g.pages).length} pages</p>`;
-                grid.appendChild(card);
-            });
-        }
-
-        function createNewGarden() {
-            const id = 'g_' + Math.random().toString(36).substr(2, 9);
-            gardens[id] = { title: 'New Site', accent: '#10b981', pages: { 'home': { name: 'Home', content: '' } } };
-            saveToDisk();
-            openGarden(id);
-        }
-
-        function openGarden(id) {
-            currentGardenId = id;
-            localStorage.setItem('bloom_last_garden', id);
-            const garden = gardens[id];
-            document.getElementById('site-title-input').value = garden.title;
-            document.getElementById('nav-brand-name').innerText = garden.title.toUpperCase();
-            document.getElementById('accent-color').value = garden.accent || '#10b981';
-            currentPageId = 'home';
-            showView('editor');
-            loadPage(currentPageId);
-        }
-
-        function loadPage(id) {
-            currentPageId = id;
-            const page = gardens[currentGardenId].pages[id];
-            document.getElementById('page-content').innerHTML = page.content;
-            updateSiteNavigation();
-            renderPagesList();
-            applyAccent();
-        }
-
-        function saveCurrentPage() {
-            if (!currentGardenId) return;
-            const garden = gardens[currentGardenId];
-            garden.pages[currentPageId].content = document.getElementById('page-content').innerHTML;
-            garden.title = document.getElementById('site-title-input').value;
-            garden.accent = document.getElementById('accent-color').value;
-            saveToDisk();
-        }
-
-        function autoSave() {
-            clearTimeout(window.saveTimer);
-            window.saveTimer = setTimeout(saveCurrentPage, 500);
-        }
-
-        function saveToDisk() { localStorage.setItem('bloom_gardens', JSON.stringify(gardens)); }
-
-        function updateSiteNavigation() {
-            const nav = document.getElementById('site-header-nav');
-            const pages = gardens[currentGardenId].pages;
-            nav.innerHTML = '';
-            Object.keys(pages).forEach(id => {
-                const link = document.createElement('span');
-                link.className = `nav-link-item ${id === currentPageId ? 'text-emerald-600' : ''}`;
-                link.innerText = pages[id].name;
-                link.onclick = () => loadPage(id);
-                nav.appendChild(link);
-            });
-        }
-
-        function renderPagesList() {
-            const list = document.getElementById('pages-list');
-            list.innerHTML = "";
-            const pages = gardens[currentGardenId].pages;
-            Object.keys(pages).forEach(id => {
-                list.innerHTML += `<div class="p-4 bg-white border border-slate-100 rounded-2xl flex justify-between items-center cursor-pointer" onclick="loadPage('${id}')">
-                    <span class="text-xs font-bold">${pages[id].name}</span>
-                    <button onclick="event.stopPropagation(); deletePage('${id}')" class="text-slate-300 hover:text-red-500"><i class="fas fa-times"></i></button>
-                </div>`;
-            });
-        }
-
-        function createNewPage() {
-            const name = prompt("Page name:");
-            if (!name) return;
-            const id = 'p_' + Math.random().toString(36).substr(2, 5);
-            gardens[currentGardenId].pages[id] = { name: name, content: '' };
-            saveToDisk();
-            loadPage(id);
-        }
-
-        function deletePage(id) {
-            if (id === 'home') return;
-            delete gardens[currentGardenId].pages[id];
-            saveToDisk();
-            loadPage('home');
+        function startNewProject() {
+            currentSite = { title: "New Project", accent: "#10b981", content: "" };
+            renderSite();
+            togglePreview(false);
         }
 
         function addBlock(type) {
             const container = document.getElementById('page-content');
-            const wrapper = document.createElement('div');
-            wrapper.className = 'element-wrapper group p-6';
+            const wrap = document.createElement('div');
+            wrap.className = 'element-wrapper group';
             
-            const controls = `<div class="element-controls">
-                <button onclick="this.closest('.element-wrapper').remove(); autoSave();" class="w-8 h-8 bg-white border border-slate-200 rounded-lg shadow-sm hover:text-red-500 flex items-center justify-center"><i class="fas fa-trash-alt text-[10px]"></i></button>
-                <button onclick="moveBlock(this, -1)" class="w-8 h-8 bg-white border border-slate-200 rounded-lg shadow-sm hover:text-emerald-500 flex items-center justify-center"><i class="fas fa-arrow-up text-[10px]"></i></button>
-                <button onclick="moveBlock(this, 1)" class="w-8 h-8 bg-white border border-slate-200 rounded-lg shadow-sm hover:text-emerald-500 flex items-center justify-center"><i class="fas fa-arrow-down text-[10px]"></i></button>
-            </div>`;
-
-            let inner = '';
-            if(type === 'banner') {
-                inner = `<div class="h-96 bg-slate-900 rounded-[40px] flex flex-col items-center justify-center text-center p-12 bg-cover bg-center overflow-hidden relative group/banner">
-                    <div class="absolute inset-0 bg-black/40"></div>
-                    <div class="relative z-10">
-                        <h1 contenteditable="true" oninput="autoSave()" class="text-5xl md:text-7xl font-black text-white mb-4 tracking-tighter">PAGE TITLE</h1>
-                        <p contenteditable="true" oninput="autoSave()" class="text-white/80 text-xl font-medium max-w-xl mx-auto italic">A beautiful description for this page</p>
-                    </div>
-                    <button onclick="triggerImageUpload('header', this)" class="absolute bottom-6 right-6 opacity-0 group-hover/banner:opacity-100 transition-all bg-white text-slate-900 text-[10px] font-black px-4 py-2 rounded-full shadow-xl">CHANGE BG</button>
-                </div>`;
-            } else if(type === 'title') {
-                inner = `<h3 contenteditable="true" oninput="autoSave()" class="text-4xl font-black text-slate-800">New Heading</h3>`;
-            } else if(type === 'button') {
-                inner = `<div class="flex py-4 group/btn relative">
-                    <a href="#" onclick="handleButtonClick(event, this)" contenteditable="true" oninput="autoSave()" class="accent-btn bg-emerald-600 text-white px-8 py-4 rounded-2xl font-bold inline-block shadow-lg transition-transform hover:scale-105">Click Me</a>
-                    <button onclick="editButtonLink(this)" class="hidden group-hover/btn:flex absolute -right-12 top-1/2 -translate-y-1/2 w-8 h-8 bg-white border rounded-full items-center justify-center text-[10px] shadow-lg"><i class="fas fa-link"></i></button>
-                </div>`;
+            let html = `<div class="element-controls"><button onclick="this.closest('.element-wrapper').remove()" class="w-8 h-8 flex items-center justify-center text-red-400 hover:bg-red-50 rounded-lg"><i class="fas fa-trash text-xs"></i></button></div>`;
+            
+            if(type === 'hero') {
+                html += `<div class="py-24 px-10 bg-slate-900 text-white text-center"><h1 contenteditable="true" class="text-6xl font-black mb-4 tracking-tighter">HELLO WORLD</h1><p contenteditable="true" class="opacity-60 text-lg">Your portable website starts here.</p></div>`;
             } else {
-                inner = `<p contenteditable="true" oninput="autoSave()" class="text-slate-500 text-lg leading-relaxed">Add your text content here.</p>`;
+                html += `<div class="p-12"><h2 contenteditable="true" class="text-3xl font-black mb-4">Heading</h2><p contenteditable="true" class="text-slate-500 leading-relaxed">This is a text block. Click to edit.</p></div>`;
             }
-
-            wrapper.innerHTML = controls + inner;
-            container.appendChild(wrapper);
-            applyAccent();
-            autoSave();
-        }
-
-        function moveBlock(btn, direction) {
-            const wrapper = btn.closest('.element-wrapper');
-            if (direction === -1 && wrapper.previousElementSibling) {
-                wrapper.parentNode.insertBefore(wrapper, wrapper.previousElementSibling);
-            } else if (direction === 1 && wrapper.nextElementSibling) {
-                wrapper.parentNode.insertBefore(wrapper.nextElementSibling, wrapper);
-            }
-            autoSave();
-        }
-
-        function editButtonLink(btn) {
-            currentButtonElement = btn.closest('.group/btn').querySelector('a');
-            document.getElementById('button-url-input').value = currentButtonElement.href || '';
-            document.getElementById('buttonModal').classList.remove('hidden');
-        }
-
-        function closeButtonModal() { document.getElementById('buttonModal').classList.add('hidden'); }
-        
-        function saveButtonLink() {
-            const url = document.getElementById('button-url-input').value;
-            currentButtonElement.href = url;
-            autoSave();
-            closeButtonModal();
-        }
-
-        function handleButtonClick(e, el) {
-            if (document.body.classList.contains('preview-mode')) {
-                // Let natural link action happen
-            } else {
-                e.preventDefault();
-            }
-        }
-
-        function openEmbedModal() { document.getElementById('embedModal').classList.remove('hidden'); }
-        function confirmAddEmbed() {
-            const code = document.getElementById('embedCodeInput').value;
-            const container = document.getElementById('page-content');
-            const wrapper = document.createElement('div');
-            wrapper.className = 'element-wrapper p-6';
-            wrapper.innerHTML = `<div class="element-controls"><button onclick="this.closest('.element-wrapper').remove(); autoSave();" class="w-8 h-8 bg-white border border-slate-200 rounded-lg shadow-sm hover:text-red-500 flex items-center justify-center"><i class="fas fa-trash-alt text-[10px]"></i></button></div><div class="rounded-2xl overflow-hidden border-2 border-dashed border-slate-100">${code}</div>`;
-            container.appendChild(wrapper);
-            document.getElementById('embedModal').classList.add('hidden');
-            autoSave();
-        }
-
-        function switchTab(tab) {
-            document.getElementById('panel-insert').classList.toggle('hidden', tab !== 'insert');
-            document.getElementById('panel-pages').classList.toggle('hidden', tab !== 'pages');
-            document.getElementById('tab-insert').classList.toggle('border-b-2', tab === 'insert');
-            document.getElementById('tab-insert').classList.toggle('text-emerald-600', tab === 'insert');
-            document.getElementById('tab-pages').classList.toggle('border-b-2', tab === 'pages');
-            document.getElementById('tab-pages').classList.toggle('text-emerald-600', tab === 'pages');
-        }
-
-        function triggerImageUpload(target, btn) {
-            window.imageTarget = target;
-            window.activeImageBtn = btn;
-            document.getElementById('imageInput').click();
-        }
-
-        function handleImageUpload(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                if(window.imageTarget === 'header') {
-                    window.activeImageBtn.closest('.bg-slate-900').style.backgroundImage = `url(${ev.target.result})`;
-                } else {
-                    const wrap = document.createElement('div');
-                    wrap.className = 'element-wrapper group p-6';
-                    wrap.innerHTML = `<div class="element-controls"><button onclick="this.closest('.element-wrapper').remove(); autoSave();" class="w-8 h-8 bg-white border border-slate-200 rounded-lg shadow-sm hover:text-red-500 flex items-center justify-center"><i class="fas fa-trash-alt text-[10px]"></i></button></div><img src="${ev.target.result}" class="rounded-[40px] w-full shadow-2xl">`;
-                    document.getElementById('page-content').appendChild(wrap);
-                }
-                autoSave();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function applyAccent() {
-            const accent = document.getElementById('accent-color').value;
-            document.querySelectorAll('.accent-btn').forEach(btn => {
-                btn.style.backgroundColor = accent;
-            });
-        }
-
-        function updateColors() {
-            applyAccent();
-            autoSave();
+            
+            wrap.innerHTML = html;
+            container.appendChild(wrap);
         }
 
         function togglePreview(on) {
             document.body.classList.toggle('preview-mode', on);
-            const contentElements = document.querySelectorAll('[contenteditable]');
-            contentElements.forEach(el => el.contentEditable = !on);
-            document.getElementById('btn-preview-mode').className = on ? "px-4 py-1.5 rounded-lg text-xs font-bold bg-white text-emerald-600 shadow-sm" : "px-4 py-1.5 rounded-lg text-xs font-bold text-slate-500";
-            document.getElementById('btn-edit-mode').className = !on ? "px-4 py-1.5 rounded-lg text-xs font-bold bg-white text-emerald-600 shadow-sm" : "px-4 py-1.5 rounded-lg text-xs font-bold text-slate-500";
+            document.querySelectorAll('[contenteditable]').forEach(el => el.contentEditable = !on);
+            document.getElementById('btn-edit').className = !on ? "px-4 py-1.5 rounded-lg text-xs font-bold bg-white text-emerald-600 shadow-sm" : "px-4 py-1.5 rounded-lg text-xs font-bold text-slate-500";
+            document.getElementById('btn-prev').className = on ? "px-4 py-1.5 rounded-lg text-xs font-bold bg-white text-emerald-600 shadow-sm" : "px-4 py-1.5 rounded-lg text-xs font-bold text-slate-500";
         }
 
-        function generateShareLink() {
-            const siteUrl = window.location.href.split('?')[0];
-            const publicUrl = `${siteUrl}?siteId=${currentGardenId}`;
-            document.getElementById('share-url').value = publicUrl;
-            document.getElementById('shareModal').classList.remove('hidden');
+        function updateStyles() {
+            const color = document.getElementById('accent-color').value;
+            document.getElementById('nav-brand').style.color = color;
         }
 
-        function copyShareUrl() {
-            const input = document.getElementById('share-url');
-            input.select();
-            document.execCommand('copy');
-            const btn = event.currentTarget;
-            btn.innerText = "DONE!";
-            setTimeout(() => btn.innerText = "COPY", 2000);
+        function exitToDashboard() {
+            window.location.search = "";
         }
 
-        window.onload = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const siteId = urlParams.get('siteId');
-            if (siteId && gardens[siteId]) {
-                document.body.classList.add('public-view');
-                currentGardenId = siteId;
-                togglePreview(true);
-                loadPage('home');
-                showView('editor');
-            } else if (currentGardenId && gardens[currentGardenId]) {
-                openGarden(currentGardenId);
-            } else {
-                showView('dashboard');
-                renderDashboard();
+        function copyLink() {
+            const copyText = document.getElementById("share-url");
+            copyText.select();
+            document.execCommand("copy");
+            alert("Link copied to clipboard!");
+        }
+
+        function closeModal() { document.getElementById('shareModal').classList.add('hidden'); }
+
+        function loadLocalProjects() {
+            const last = localStorage.getItem('bloom_last_site');
+            if(last) {
+                const data = JSON.parse(last);
+                document.getElementById('local-projects').innerHTML = `
+                    <div onclick="startLastProject()" class="p-6 bg-white border border-slate-100 rounded-3xl shadow-sm hover:shadow-md cursor-pointer">
+                        <div class="text-emerald-500 font-black text-[10px] uppercase mb-1">Last Edited</div>
+                        <h3 class="font-black text-xl">${data.title}</h3>
+                    </div>
+                `;
             }
-        };
+        }
+        function startLastProject() {
+            currentSite = JSON.parse(localStorage.getItem('bloom_last_site'));
+            renderSite();
+            togglePreview(false);
+        }
     </script>
 </body>
 </html>
