@@ -1,0 +1,1 @@
+function addHeading(){page.innerHTML+='<h2>New Heading</h2>'}function addText(){page.innerHTML+='<p>New Text</p>'}function previewSite(){localStorage.preview=page.innerHTML;open('viewer.html','_blank')}async function publishSite(){alert('Connect Render publish API here')}const page=document.getElementById('page');

@@ -1,0 +1,1 @@
+Place video.mp4, planty.png and pip.png in this folder.
